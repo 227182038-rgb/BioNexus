@@ -1,0 +1,81 @@
+site_name: BioKit 2.0
+site_description: A market-competitive Python toolkit for biological sequence analysis, genomics, structural bioinformatics, population genetics, CRISPR design, phylogenetics, and ML for biology.
+site_author: BioKit Contributors
+site_url: https://227182038-rgb.github.io/Python-for-Biology/
+
+repo_url: https://github.com/227182038-rgb/Python-for-Biology
+repo_name: 227182038-rgb/Python-for-Biology
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - scheme: default
+      primary: teal
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quickstart.md
+  - Guide:
+      - Sequences: guide/sequences.md
+      - I/O: guide/io.md
+      - Alignment: guide/alignment.md
+      - Assembly: guide/assembly.md
+      - CRISPR: guide/crispr.md
+      - Machine Learning: guide/machine_learning.md
+  - API Reference:
+      - biokit.sequence: api/sequence.md
+      - biokit.io: api/io.md
+      - biokit.alignment: api/alignment.md
+      - biokit.assembly: api/assembly.md
+      - biokit.blast: api/blast.md
+      - biokit.primer: api/primer.md
+      - biokit.crispr: api/crispr.md
+      - biokit.popgen: api/popgen.md
+      - biokit.structural: api/structural.md
+      - biokit.phylogeny: api/phylogeny.md
+      - biokit.machine_learning: api/machine_learning.md
+  - Changelog: changelog.md

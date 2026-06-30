@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<BlastOutput>
+  <BlastOutput_program>blastn</BlastOutput_program>
+  <BlastOutput_iterations>
+    <Iteration>
+      <Iteration_iter-num>1</Iteration_iter-num>
+      <Iteration_query-ID>query1</Iteration_query-ID>
+      <Iteration_query-def>query1 test sequence</Iteration_query-def>
+      <Iteration_query-len>120</Iteration_query-len>
+      <Iteration_hits>
+        <Hit>
+          <Hit_num>1</Hit_num>
+          <Hit_id>gi|12345|ref|NM_001.1|</Hit_id>
+          <Hit_def>Sample gene 1</Hit_def>
+          <Hit_accession>NM_001</Hit_accession>
+          <Hit_len>1500</Hit_len>
+          <Hit_hsps>
+            <Hsp>
+              <Hsp_num>1</Hsp_num>
+              <Hsp_bit-score>250.0</Hsp_bit-score>
+              <Hsp_score>125</Hsp_score>
+              <Hsp_evalue>1e-50</Hsp_evalue>
+              <Hsp_query-from>1</Hsp_query-from>
+              <Hsp_query-to>120</Hsp_query-to>
+              <Hsp_hit-from>10</Hsp_hit-from>
+              <Hsp_hit-to>129</Hsp_hit-to>
+              <Hsp_query-frame>1</Hsp_query-frame>
+              <Hsp_hit-frame>1</Hsp_hit-frame>
+              <Hsp_identity>120</Hsp_identity>
+              <Hsp_positive>120</Hsp_positive>
+              <Hsp_gaps>0</Hsp_gaps>
+              <Hsp_align-len>120</Hsp_align-len>
+              <Hsp_qseq>ATGGCAGGTGACCCGTGAATGAAACGTACGTTAAGGATGCAA</Hsp_qseq>
+              <Hsp_hseq>ATGGCAGGTGACCCGTGAATGAAACGTACGTTAAGGATGCAA</Hsp_hseq>
+              <Hsp_midline>||||||||||||||||||||||||||||||||||||||||||</Hsp_midline>
+            </Hsp>
+          </Hit_hsps>
+        </Hit>
+      </Iteration_hits>
+    </Iteration>
+  </BlastOutput_iterations>
+</BlastOutput>

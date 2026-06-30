@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use BioKit in your research, please cite it as below."
+title: "BioKit 2.0: A market-competitive Python toolkit for biology"
+type: software
+authors:
+  - alias: BioKit Contributors
+repository-code: "https://github.com/227182038-rgb/Python-for-Biology"
+license: MIT
+version: "2.0.0"
+date-released: "2025-01-01"
+keywords:
+  - bioinformatics
+  - genomics
+  - sequence-analysis
+  - crispr
+  - phylogenetics
+  - machine-learning

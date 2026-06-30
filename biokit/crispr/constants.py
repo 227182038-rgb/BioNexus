@@ -1,0 +1,9 @@
+"""CRISPR constants."""
+
+from __future__ import annotations
+
+DEFAULT_PAM = "NGG"
+DEFAULT_GUIDE_LENGTH = 20
+DEFAULT_MAX_MISMATCHES = 3
+
+__all__ = ["DEFAULT_GUIDE_LENGTH", "DEFAULT_MAX_MISMATCHES", "DEFAULT_PAM"]

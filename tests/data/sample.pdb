@@ -1,0 +1,17 @@
+HEADER    SAMPLE                                  01-JAN-25   XXXX
+TITLE     SAMPLE PROTEIN
+COMPND    MOL_ID: 1;
+ATOM      1  N   SER A   2      11.104  19.296  13.644  1.00 20.00           N
+ATOM      2  CA  SER A   2      10.278  18.131  13.591  1.00 20.00           C
+ATOM      3  C   SER A   2      10.786  17.169  12.494  1.00 20.00           C
+ATOM      4  O   SER A   2      11.981  17.209  12.067  1.00 20.00           O
+ATOM      5  N   GLY A   3      10.014  16.314  12.054  1.00 20.00           N
+ATOM      6  CA  GLY A   3      10.556  15.391  11.103  1.00 20.00           C
+ATOM      7  C   GLY A   3      10.234  14.009  11.599  1.00 20.00           C
+ATOM      8  O   GLY A   3       9.492  13.470  11.171  1.00 20.00           O
+ATOM      9  N   ALA A   4      10.771  13.485  12.530  1.00 20.00           N
+ATOM     10  CA  ALA A   4      10.504  12.149  13.052  1.00 20.00           C
+ATOM     11  C   ALA A   4      11.634  11.738  13.982  1.00 20.00           C
+ATOM     12  O   ALA A   4      12.727  12.316  13.944  1.00 20.00           O
+TER      13      ALA A   4
+END

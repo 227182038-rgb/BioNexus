@@ -1,0 +1,3 @@
+# `biokit.popgen`
+
+::: biokit.popgen
