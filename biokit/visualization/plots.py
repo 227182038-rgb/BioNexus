@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from typing import TYPE_CHECKING, cast
 
 import matplotlib
 
@@ -13,14 +14,32 @@ from Bio.SeqRecord import SeqRecord
 from biokit.exceptions import VisualizationError
 from biokit.statistics.sequence_stats import gc_fraction
 
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+
+def _get_or_create_fig_ax(
+    ax: Axes | None,
+) -> tuple[Figure, Axes]:
+    """Return ``(fig, ax)`` — either from ``ax`` or a new figure."""
+    if ax is None:
+        fig, new_ax = plt.subplots(constrained_layout=True)
+        return fig, new_ax
+    # ``ax.figure`` is typed as ``Figure | SubFigure | None`` in matplotlib
+    # stubs. In practice it is always set for non-embedded axes; we cast
+    # rather than suppress because the alternative (returning Optional) would
+    # force every caller to handle None.
+    return cast(Figure, ax.figure), ax
+
 
 def plot_gc_content(
     sequence: str,
     window: int = 100,
     step: int | None = None,
     title: str | None = None,
-    ax: plt.Axes | None = None,
-) -> plt.Figure:
+    ax: Axes | None = None,
+) -> Figure:
     """Plot GC content across ``sequence`` using a sliding window."""
     if window < 1:
         raise VisualizationError("window must be ≥ 1")
@@ -30,10 +49,7 @@ def plot_gc_content(
     for i in range(0, len(sequence) - window + 1, step):
         positions.append(i + window // 2)
         values.append(gc_fraction(sequence[i : i + window]) * 100)
-    if ax is None:
-        fig, ax = plt.subplots(constrained_layout=True)
-    else:
-        fig = ax.figure
+    fig, ax = _get_or_create_fig_ax(ax)
     ax.plot(positions, values, color="#2c7fb8", linewidth=1.5)
     ax.axhline(50, color="grey", linestyle=":", linewidth=0.8)
     ax.set_xlabel("Position (bp)")
@@ -47,16 +63,13 @@ def plot_length_histogram(
     sequences: Iterable[SeqRecord],
     bins: int = 30,
     title: str | None = None,
-    ax: plt.Axes | None = None,
-) -> plt.Figure:
+    ax: Axes | None = None,
+) -> Figure:
     """Plot a histogram of sequence lengths."""
-    lengths = [len(s.seq) for s in sequences]
+    lengths: list[int] = [len(str(s.seq)) for s in sequences]
     if not lengths:
         raise VisualizationError("no sequences to plot")
-    if ax is None:
-        fig, ax = plt.subplots(constrained_layout=True)
-    else:
-        fig = ax.figure
+    fig, ax = _get_or_create_fig_ax(ax)
     ax.hist(lengths, bins=bins, color="#31a354", edgecolor="white")
     ax.set_xlabel("Sequence length (bp)")
     ax.set_ylabel("Count")
@@ -67,18 +80,15 @@ def plot_length_histogram(
 def plot_composition_bar(
     sequence: str,
     title: str | None = None,
-    ax: plt.Axes | None = None,
-) -> plt.Figure:
+    ax: Axes | None = None,
+) -> Figure:
     """Plot A/C/G/T composition as a bar chart."""
     seq = sequence.upper()
     counts = {b: seq.count(b) for b in "ACGT"}
     total = sum(counts.values()) or 1
     freqs = [counts[b] / total for b in "ACGT"]
     colors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3"]
-    if ax is None:
-        fig, ax = plt.subplots(constrained_layout=True)
-    else:
-        fig = ax.figure
+    fig, ax = _get_or_create_fig_ax(ax)
     ax.bar(list("ACGT"), freqs, color=colors, edgecolor="white")
     ax.set_ylabel("Frequency")
     ax.set_ylim(0, 1)
@@ -92,16 +102,13 @@ def plot_dotplot(
     window: int = 10,
     threshold: int | None = None,
     title: str | None = None,
-    ax: plt.Axes | None = None,
-) -> plt.Figure:
+    ax: Axes | None = None,
+) -> Figure:
     """Plot a dotplot of two sequences."""
     seq_a = seq_a.upper()
     seq_b = seq_b.upper()
     threshold = threshold if threshold is not None else window
-    if ax is None:
-        fig, ax = plt.subplots(constrained_layout=True)
-    else:
-        fig = ax.figure
+    fig, ax = _get_or_create_fig_ax(ax)
     xs: list[int] = []
     ys: list[int] = []
     for i in range(len(seq_a) - window + 1):

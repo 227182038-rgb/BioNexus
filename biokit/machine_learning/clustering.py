@@ -85,7 +85,8 @@ class KMeans:
             raise NotFittedError("KMeans must be fitted before predict")
         X = np.asarray(X, dtype=float)
         dists = np.sqrt(((X[:, None, :] - self._centroids[None, :, :]) ** 2).sum(axis=-1))
-        return dists.argmin(axis=1).astype(np.int32)
+        result: NDArray[np.int32] = dists.argmin(axis=1).astype(np.int32)
+        return result
 
 
 __all__ = ["KMeans"]

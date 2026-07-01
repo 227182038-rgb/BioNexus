@@ -18,12 +18,12 @@ class AssemblyResult:
     @property
     def total_length(self) -> int:
         """Sum of all contig lengths."""
-        return sum(len(c.seq) for c in self.contigs)
+        return sum(len(str(c.seq)) for c in self.contigs)
 
     @property
     def longest_contig(self) -> int:
         """Length of the longest contig (0 if no contigs)."""
-        return max((len(c.seq) for c in self.contigs), default=0)
+        return max((len(str(c.seq)) for c in self.contigs), default=0)
 
     @property
     def num_contigs(self) -> int:

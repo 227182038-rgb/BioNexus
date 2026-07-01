@@ -35,7 +35,9 @@ def genotype_frequencies(genotypes: Iterable[Genotype]) -> dict[Genotype, float]
     counts: Counter[Genotype] = Counter()
     total = 0
     for gt in genotypes:
-        counts[tuple(sorted(gt))] += 1  # type: ignore[arg-type]
+        # Normalise so the smaller allele comes first.
+        a1, a2 = sorted(gt)
+        counts[(a1, a2)] += 1
         total += 1
     if total == 0:
         return {}

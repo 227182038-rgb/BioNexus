@@ -1,0 +1,110 @@
+site_name: Nexus Ω — Biological Interpretation Intelligence
+site_description: AI-native scientific operating system for biology. Nexus orchestrates BioKit, scientific knowledge, and AI reasoning.
+site_author: Nexus Project
+site_url: https://nexus-bii.github.io/nexus/
+repo_url: https://github.com/nexus-bii/nexus
+repo_name: nexus-bii/nexus
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    logo: material/molecule-co2
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Quickstart: quickstart.md
+  - Guides:
+    - Providers: guides/providers.md
+    - Agents: guides/agents.md
+    - RAG: guides/rag.md
+    - Knowledge sources: guides/knowledge.md
+    - Memory: guides/memory.md
+    - Plugins: guides/plugins.md
+  - API reference:
+    - nexus.core: api/core.md
+    - nexus.providers: api/providers.md
+    - nexus.intelligence: api/intelligence.md
+    - nexus.rag: api/rag.md
+    - nexus.knowledge: api/knowledge.md
+    - nexus.agents: api/agents.md
+    - nexus.memory: api/memory.md
+    - nexus.sdk: api/sdk.md
+  - CLI: cli.md
+  - REST API: rest_api.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+            show_bases: true
+            members_order: source
+            filters:
+              - "!^_"
+              - "!^__"
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/nexus-bii/nexus
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/nexus-bii/
+
+copyright: Copyright &copy; 2026 Nexus Project. Apache License 2.0.

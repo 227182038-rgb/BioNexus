@@ -82,11 +82,11 @@ class CodonUsage:
             codon = seq[i : i + 3]
             if len(codon) < 3:
                 break
-            aa = STANDARD_GENETIC_CODE.get(codon)
-            if not aa or aa == "*":
+            aa_or_none = STANDARD_GENETIC_CODE.get(codon)
+            if not aa_or_none or aa_or_none == "*":
                 continue
             rscu_codon = ref.get(codon, 0.0)
-            rscu_max = max_rscu.get(aa, 0.0)
+            rscu_max = max_rscu.get(aa_or_none, 0.0)
             if rscu_codon > 0 and rscu_max > 0:
                 log_sum += __import__("math").log(rscu_codon / rscu_max)
                 n += 1

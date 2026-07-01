@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from biokit.constants import DNA_ALPHABET, DNA_COMPLEMENT
 from biokit.sequence.sequence import BioSequence
+
+if TYPE_CHECKING:
+    from biokit.sequence.protein import Protein
+    from biokit.sequence.rna import RNA
 
 
 class DNA(BioSequence):

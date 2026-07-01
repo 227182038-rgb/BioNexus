@@ -31,8 +31,8 @@ def linkage_disequilibrium(
     fb = allele_frequencies(genotypes_b)
     if not fa or not fb:
         return 0.0, 0.0
-    a = max(fa, key=fa.get)
-    b = max(fb, key=fb.get)
+    a = max(fa, key=lambda k: fa[k])
+    b = max(fb, key=lambda k: fb[k])
     pa = fa[a]
     pb = fb[b]
     xa = [sum(1 for x in gt if x == a) / 2.0 for gt in genotypes_a]

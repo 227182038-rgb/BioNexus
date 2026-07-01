@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from Bio.SeqFeature import SeqFeature, SimpleLocation
+if TYPE_CHECKING:
+    from Bio.SeqFeature import SeqFeature
 
 
 @dataclass
@@ -27,6 +29,8 @@ class AnnotationFeature:
 
     def to_seq_feature(self) -> SeqFeature:
         """Convert to a Biopython :class:`SeqFeature`."""
+        from Bio.SeqFeature import SeqFeature, SimpleLocation
+
         strand_value = 1 if self.strand == "+" else -1 if self.strand == "-" else 0
         location = SimpleLocation(self.start - 1, self.end, strand=strand_value)
         qualifiers = {k: [v] for k, v in self.attributes.items()}

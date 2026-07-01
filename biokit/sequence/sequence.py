@@ -5,13 +5,17 @@ from __future__ import annotations
 from collections.abc import Iterator
 from enum import Enum
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from biokit.exceptions import InvalidSequenceError
 from biokit.statistics.sequence_stats import gc_fraction, molecular_weight_daltons
 
 if TYPE_CHECKING:
     from Bio.SeqRecord import SeqRecord
+
+#: Type variable bound to :class:`BioSequence`, used for ``__getitem__`` and
+#: other methods that return ``type(self)`` rather than the base class.
+T = TypeVar("T", bound="BioSequence")
 
 
 class SequenceType(str, Enum):
@@ -51,6 +55,9 @@ class BioSequence:
     'ATGGCAGGT'
     """
 
+    # ``__dict__`` is required for ``functools.cached_property`` to work
+    # (gc_content, molecular_weight). ``__weakref__`` is required for the
+    # weak-reference pattern used by some downstream consumers.
     __slots__ = ("__dict__", "__weakref__", "_description", "_id", "_sequence")
 
     #: Subclasses override this with the IUPAC alphabet (frozenset of valid chars).
@@ -63,9 +70,9 @@ class BioSequence:
             raise InvalidSequenceError("sequence must be non-empty")
         seq_upper = sequence.upper()
         self._validate_alphabet(seq_upper)
-        self._sequence = seq_upper
-        self._id = id
-        self._description = description
+        self._sequence: str = seq_upper
+        self._id: str = id
+        self._description: str = description
 
     # ------------------------------------------------------------------
     # Validation
@@ -138,7 +145,7 @@ class BioSequence:
     def __iter__(self) -> Iterator[str]:
         return iter(self._sequence)
 
-    def __getitem__(self, index: int | slice) -> BioSequence:
+    def __getitem__(self: T, index: int | slice) -> T:
         return type(self)(self._sequence[index], id=self._id, description=self._description)
 
     # ------------------------------------------------------------------

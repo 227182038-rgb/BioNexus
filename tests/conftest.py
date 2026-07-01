@@ -1,4 +1,4 @@
-﻿"""Shared pytest fixtures.
+"""Shared pytest fixtures.
 
 The ``chdir_to_project_root`` fixture (autouse) changes the working directory
 to the project root before every test, so tests that use relative paths like

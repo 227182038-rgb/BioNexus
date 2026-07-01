@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -52,7 +54,8 @@ class PCA:
         if self._mean is None or self._components is None:
             raise NotFittedError("PCA must be fitted before transform")
         X = np.asarray(X, dtype=float)
-        return (X - self._mean) @ self._components.T
+        projected: Any = (X - self._mean) @ self._components.T
+        return np.asarray(projected, dtype=float)
 
     def fit_transform(self, X: NDArray[np.float64]) -> NDArray[np.float64]:
         """Fit and project X."""
@@ -64,7 +67,9 @@ class PCA:
         """Fraction of total variance explained by each PC."""
         if self._explained_variance is None:
             raise NotFittedError("PCA must be fitted first")
-        return self._explained_variance / self._explained_variance.sum()
+        total = self._explained_variance.sum()
+        ratio: Any = self._explained_variance / total
+        return np.asarray(ratio, dtype=float)
 
 
 __all__ = ["PCA"]

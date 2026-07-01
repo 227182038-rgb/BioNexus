@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,7 @@ class AtomInfo:
     residue_name: str
     atom_name: str
     element: str
-    coord: np.ndarray
+    coord: NDArray[np.float64]
 
 
 @dataclass

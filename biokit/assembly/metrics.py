@@ -3,19 +3,24 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TypeAlias
 
 from Bio.SeqRecord import SeqRecord
 
 from biokit.statistics.sequence_stats import gc_fraction
 
-ContigLike = SeqRecord | int
+ContigLike: TypeAlias = SeqRecord | int
 
 
 def _lengths(contigs: Sequence[ContigLike]) -> list[int]:
-    return sorted(
-        (len(c.seq) if isinstance(c, SeqRecord) else int(c) for c in contigs),
-        reverse=True,
-    )
+    """Extract lengths from a mix of SeqRecord and int contigs, sorted desc."""
+    out: list[int] = []
+    for c in contigs:
+        if isinstance(c, SeqRecord):
+            out.append(len(str(c.seq)))
+        else:
+            out.append(int(c))
+    return sorted(out, reverse=True)
 
 
 def n50(contigs: Sequence[ContigLike]) -> int:

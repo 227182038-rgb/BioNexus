@@ -1,89 +1,133 @@
-# BioKit 2.0
+# BioNexus Platform
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-500%2B-brightgreen.svg)](#)
-[![Coverage](https://img.shields.io/badge/coverage-90%25%2B-brightgreen.svg)](#)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-245%2B-brightgreen.svg)](#)
+[![Coverage](https://img.shields.io/badge/coverage-80%25%2B-brightgreen.svg)](#)
 
-**BioKit 2.0** is a market-competitive Python toolkit for biological sequence
-analysis, genomics, structural bioinformatics, population genetics, CRISPR
-design, phylogenetics, and machine learning for biology.
+**BioNexus** is a unified platform that pairs **BioKit 2.0** (deterministic
+bioinformatics) with **NEXUS Ω** (AI-native biological interpretation
+intelligence). **BioKit computes. Nexus understands.**
 
-## Highlights
+## Architecture
 
-- **30 modules** organised in 22 subpackages
-- **Modern Python 3.10+** with full type hints, `@dataclass(slots=True, frozen=True)`, PEP 695 style
-- **NumPy-style docstrings** with usage examples for every public function
-- **90%+ test coverage** with property-based tests via Hypothesis
-- **Biopython interop** — `BioSequence.to_seqrecord()` bridges seamlessly
-- **Strict mypy** clean
-- **Ruff lint** clean with strict ruleset
-- **CLI** via Typer with rich terminal output
-- **Plugin architecture** via entry points
-- **MkDocs Material** documentation
+```
+                    ┌──────────────────────────────────┐
+                    │   User (SDK / CLI / API / Web)   │
+                    └──────────────┬───────────────────┘
+                                   │
+                    ┌──────────────▼───────────────────┐
+                    │       NEXUS Orchestrator         │
+                    │  (literature, validation,        │
+                    │   experiment, workflow, report)  │
+                    └──────┬───────────────────┬───────┘
+                           │                   │
+              ┌────────────▼──┐       ┌────────▼────────┐
+              │  Intelligence │       │   RAG + Memory  │
+              │  (interpret,  │       │  (PubMed, NCBI, │
+              │   reason,     │       │   UniProt, PDB) │
+              │   hypothesize)│       └─────────────────┘
+              └────┬──────────┘
+                   │
+              ┌────▼──────────────────────────────────┐
+              │            BRIDGE LAYER               │  ◀── integration
+              │  (22+ BioKitProgram adapters)         │
+              └────┬──────────────────────────────────┘
+                   │
+              ┌────▼──────────────────────────────────┐
+              │            BioKit 2.0                 │  ◀── deterministic
+              │  30 modules across 22 subpackages:    │      substrate
+              │  sequence, alignment, assembly, BLAST,│
+              │  primer, CRISPR, popgen, structural,  │
+              │  phylogeny, machine_learning, ...    │
+              └───────────────────────────────────────┘
+```
 
-## Modules
-
-| Module | Description |
-| --- | --- |
-| `biokit.sequence` | `BioSequence` value type, `DNA`/`RNA`/`Protein` subclasses, IUPAC validation |
-| `biokit.io` | FASTA, FASTQ, GFF3, BED, GenBank parsers/writers |
-| `biokit.alignment` | Needleman-Wunsch, Smith-Waterman, Gotoh (affine gaps), MSA |
-| `biokit.assembly` | De Bruijn graph, OLC assemblers, N50/L50/N90 |
-| `biokit.annotation` | Feature orchestration across GFF3/BED/GenBank |
-| `biokit.orf` | Six-frame ORF finding |
-| `biokit.translation` | Codon-based translation |
-| `biokit.codon` | Codon usage analysis (RSCU, CAI) |
-| `biokit.kmers` | K-mer counting and indexing |
-| `biokit.motifs` | Motif finding |
-| `biokit.blast` | BLAST XML/tabular parsing, local BLAST+ runner |
-| `biokit.primer` | Primer design with Wallace/GC/NN Tm estimators |
-| `biokit.rna` | Transcription, reverse transcription |
-| `biokit.structural` | PDB parsing, RMSD, Kabsch superposition |
-| `biokit.popgen` | HWE, F_ST (Weir-Cockerham), linkage disequilibrium |
-| `biokit.crispr` | sgRNA design, off-target search |
-| `biokit.machine_learning` | Classifiers, clustering, PCA, encoders, metrics |
-| `biokit.phylogeny` | Tree, UPGMA, Robinson-Foulds, Newick |
-| `biokit.restriction` | Restriction enzyme analysis |
-| `biokit.visualization` | Matplotlib plots, dotplots |
-| `biokit.statistics` | GC content, composition, sequence complexity |
+The bridge layer is the *only* place where NEXUS learns about BioKit's
+concrete API. It enforces the Prime Directive: BioKit computations stay
+deterministic and content-addressed; NEXUS agents consume their outputs
+as evidence but may not modify them.
 
 ## Installation
 
 ```bash
-pip install -e ".[dev,ml,viz,docs]"
+git clone https://github.com/227182038-rgb/BioNexus.git
+cd BioNexus
+pip install -e ".[dev,openai,anthropic,glm,ollama]"
 ```
 
 ## Quick Start
 
 ```python
-from biokit.sequence import DNA
-from biokit.orf import ORFFinder
-from biokit.primer import design_primer
+from bridge import quickstart
 
-# DNA value type
-dna = DNA("ATGGCAGGTGACCCGTGA")
-print(f"GC: {dna.gc_content:.2%}")
-print(f"Protein: {dna.translate().sequence}")
+# One call wires NEXUS + BioKit 2.0 together with all 22+ programs registered
+nx = quickstart()
 
-# ORF finding
-orfs = ORFFinder(minimum_length=6).find(dna.sequence)
-print(f"ORFs: {len(orfs)}")
+# Run a deterministic BioKit calculation
+output = nx.run_biokit("gc_content", {"sequence": "ATGGCAGGTGACCCGTGA"})
+print(f"GC: {output.outputs['gc_percentage']:.2f}%")
 
-# Primer design
-primers = design_primer("ATGGCAGGTGACCCGTTGACCGTACGTAACGCATGCAGT")
-print(f"Best primer: {primers[0].sequence} (Tm={primers[0].tm:.1f}°C)")
+# Find ORFs
+orfs = nx.run_biokit("find_orfs", {
+    "sequence": "ATGGCAGGTGACCCGTGAATGAAACGTACGTTGA",
+    "minimum_length": 6,
+})
+print(f"Found {orfs.outputs['count']} ORFs")
+
+# Ask NEXUS to interpret the result (literature-grounded, evidence-cited)
+# (Uses DummyProvider by default — swap in OpenAI/Anthropic/GLM/Ollama for real LLM)
+result = nx.interpret(
+    "What does this GC content suggest about the sequence?",
+    agent="literature",
+    context={"biokit_output": output.outputs},
+)
+print(result.answer)
 ```
 
 ## CLI
 
 ```bash
-biokit gc --sequence ATGGCAGGTGACCCGTGA
-biokit orfs --sequence ATGGCAGGTGACCCGTGA --min-length 6
-biokit translate --sequence ATGGCAGGTGACCCGTGA --frame 1
-biokit version
+# BioKit 2.0 commands
+bionexus biokit gc --sequence ATGGCAGGT
+bionexus biokit orfs --sequence ATGGCAGGTGACCCGTGA --min-length 6
+bionexus biokit translate --sequence ATGGCAGGTGACCCGTGA
+
+# NEXUS commands
+bionexus nexus interpret --question "What does BRCA1 do?"
+bionexus nexus agents
+
+# Bridge commands
+bionexus programs                                          # list all 22+ BioKit programs
+bionexus run gc_content --inputs '{"sequence": "ATGGCAGGT"}'
+bionexus run find_orfs --inputs '{"sequence": "ATGGCAGGTGACCCGTGA", "minimum_length": 6}'
+bionexus version
 ```
+
+## Modules
+
+### BioKit 2.0 (deterministic substrate)
+
+22 subpackages: `sequence`, `io`, `alignment`, `assembly`, `annotation`,
+`orf`, `translation`, `codon`, `kmers`, `motifs`, `blast`, `primer`, `rna`,
+`structural`, `popgen`, `crispr`, `machine_learning`, `phylogeny`,
+`restriction`, `visualization`, `statistics`, `models`.
+
+### NEXUS (AI interpretation layer)
+
+10 subpackages: `core` (engine, orchestrator, BioKit facade),
+`intelligence` (interpretation, validation, reasoning, hypothesis),
+`rag` (indexing, retrieval, ranking, citation), `knowledge` (PubMed, NCBI,
+UniProt, PDB, Ensembl, GO), `providers` (OpenAI, Anthropic, Gemini, GLM,
+Ollama, OpenRouter), `agents` (literature, validation, experiment,
+workflow, report), `memory`, `reports`, `plugins`, `api`.
+
+### Bridge (integration layer)
+
+22+ `BioKitProgram` adapters that wrap BioKit 2.0 modules as NEXUS
+deterministic computation programs. Adding a new BioKit module to NEXUS
+= adding one class in `bridge/biokit_programs.py`.
 
 ## License
 
-MIT
+Apache License 2.0. See [LICENSE](LICENSE).

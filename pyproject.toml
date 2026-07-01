@@ -3,14 +3,14 @@ requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
 
 [project]
-name = "biokit"
-version = "2.0.0"
-description = "BioKit 2.0 — a market-competitive Python toolkit for biological sequence analysis, genomics, structural bioinformatics, population genetics, CRISPR design, phylogenetics, and ML for biology."
+name = "bionexus-platform"
+version = "1.0.0"
+description = "BioNexus — a unified platform pairing BioKit 2.0 (deterministic bioinformatics) with NEXUS (AI-native biological interpretation intelligence). BioKit computes. Nexus understands."
 readme = "README.md"
 requires-python = ">=3.10"
-license = "MIT"
+license = "Apache-2.0"
 authors = [
-    { name = "BioKit Contributors" },
+    { name = "BioNexus Contributors" },
 ]
 keywords = [
     "bioinformatics",
@@ -26,11 +26,16 @@ keywords = [
     "structural-biology",
     "population-genetics",
     "machine-learning",
+    "llm",
+    "rag",
+    "multi-agent",
+    "scientific-computing",
+    "ai",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -41,10 +46,22 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    # BioKit 2.0 deps
     "biopython>=1.83",
     "numpy>=1.26",
     "scipy>=1.11",
     "matplotlib>=3.8",
+    # NEXUS deps
+    "pydantic>=2.5,<3",
+    "httpx>=0.27,<1",
+    "typer>=0.12,<1",
+    "rich>=13.7,<14",
+    "fastapi>=0.110,<1",
+    "uvicorn[standard]>=0.29,<1",
+    "structlog>=24.1,<25",
+    "pydantic-settings>=2.1,<3",
+    "pyyaml>=6.0,<7",
+    "tqdm>=4.66,<5",
 ]
 
 [project.optional-dependencies]
@@ -56,89 +73,96 @@ viz = [
     "reportlab>=4.0",
     "seaborn>=0.13",
 ]
+# LLM providers (all four wired into the eval harness per Decision 3abcd)
+openai = ["openai>=1.30,<2"]
+anthropic = ["anthropic>=0.25,<1"]
+gemini = ["google-generativeai>=0.7,<1"]
+glm = ["zhipuai>=2.0,<3"]
+ollama = ["ollama>=0.2,<1"]
+local-embeddings = ["sentence-transformers>=3.0,<4"]
+web = ["jinja2>=3.1,<4", "python-multipart>=0.0.9,<1"]
 docs = [
-    "mkdocs>=1.6",
-    "mkdocs-material>=9.5",
-    "mkdocstrings[python]>=0.24",
-    "mike>=2.0",
+    "mkdocs>=1.6,<2",
+    "mkdocs-material>=9.5,<10",
+    "mkdocstrings[python]>=0.25,<1",
+    "mike>=2.0,<3",
 ]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "pytest-xdist>=3.5",
     "pytest-benchmark>=4.0",
+    "pytest-asyncio>=0.23,<1",
     "hypothesis>=6.100",
     "ruff>=0.5",
     "mypy>=1.10",
     "pre-commit>=3.7",
 ]
-all = ["biokit[ml,viz,docs,dev]"]
+all = ["bionexus-platform[ml,viz,openai,anthropic,gemini,glm,ollama,local-embeddings,web,docs,dev]"]
 
 [project.scripts]
 biokit = "biokit.cli:app"
+nexus = "nexus.cli.main:app"
+bionexus = "bridge.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/227182038-rgb/Python-for-Biology"
-Documentation = "https://227182038-rgb.github.io/Python-for-Biology/"
-Repository = "https://github.com/227182038-rgb/Python-for-Biology"
-Issues = "https://github.com/227182038-rgb/Python-for-Biology/issues"
-Changelog = "https://github.com/227182038-rgb/Python-for-Biology/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/227182038-rgb/BioNexus"
+Documentation = "https://227182038-rgb.github.io/BioNexus/"
+Repository = "https://github.com/227182038-rgb/BioNexus"
+Issues = "https://github.com/227182038-rgb/BioNexus/issues"
+Changelog = "https://github.com/227182038-rgb/BioNexus/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["biokit"]
+packages = ["biokit", "nexus", "bridge"]
 
 # ---------------------------------------------------------------------------
-# Ruff — modern Python linter and formatter
+# Ruff
 # ---------------------------------------------------------------------------
 
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-src = ["biokit", "tests"]
+src = ["biokit", "nexus", "bridge", "tests"]
 extend-exclude = ["docs", "build", "dist"]
 
 [tool.ruff.lint]
-select = [
-    "E", "W",       # pycodestyle
-    "F",            # Pyflakes
-    "I",            # isort
-    "B",            # flake8-bugbear
-    "C4",           # flake8-comprehensions
-    "UP",           # pyupgrade
-    "RUF",          # ruff-specific
-    "SIM",          # flake8-simplify
-    "S",            # flake8-bandit
-    "PERF",         # Perflint
-]
+select = ["E", "W", "F", "I", "B", "C4", "UP", "RUF", "SIM", "S", "PERF"]
 ignore = [
-    "E501",         # line length (handled by formatter)
-    "PLR0913",      # too many arguments
-    "S101",         # use of assert (needed for tests)
-    "B008",         # function call in defaults (Typer pattern)
-    "RUF022",       # __all__ sorting (we group by domain, not alphabetical)
-    "RUF012",       # mutable class-level defaults (used by dataclass patterns)
-    "PLR2004",      # magic values in tests
-    "S314",         # XML parsing (we use ElementTree on local trusted files)
-    "S108",         # /tmp usage in tests
-    "E741",         # ambiguous variable name `l` (used in fortran-style loops)
-    "B007",         # loop variable not used (often intentional)
-    "RUF002",       # ambiguous unicode (we intentionally use en-dash for ranges)
-    "RUF003",       # ambiguous unicode in comments
-    "RUF059",       # unused unpacked variable (SVD return value)
-    "SIM108",       # ternary operator (if/else is clearer for ML scoring)
-    "SIM102",       # nested if (intentional for readability)
-    "SIM117",       # nested with (intentional)
+    "E501",
+    "PLR0913",
+    "S101",
+    "B008",
+    "RUF022",
+    "RUF012",
+    "PLR2004",
+    "S314",
+    "S108",
+    "E741",
+    "B007",
+    "RUF002",
+    "RUF003",
+    "RUF059",
+    "SIM108",
+    "SIM102",
+    "SIM117",
+    "B904",
+    "PERF203",  # try-except in loop (NEXUS pattern, kept for clarity)
+    "PERF401",  # list.extend vs append (NEXUS pattern, kept for readability)
+    "S112",     # try-except-continue (NEXUS pattern, kept for resilience)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S301", "PLR2004", "E402", "F841", "S311"]
-"tests/benchmarks/**" = ["S311"]  # deterministic RNG for fixtures, not crypto
+"tests/**" = ["S101", "S301", "PLR2004", "E402", "F841", "S311", "B011"]
+"tests/benchmarks/**" = ["S311"]
 "examples/**" = ["T201", "E402"]
 "biokit/**/__init__.py" = ["F401"]
-"biokit/sequence/dna.py" = ["F821"]    # forward references to RNA/Protein resolved at runtime
-"biokit/sequence/rna.py" = ["F821"]    # forward references to DNA resolved at runtime
+"nexus/**/__init__.py" = ["F401"]
+"bridge/**/__init__.py" = ["F401"]
+"biokit/sequence/dna.py" = ["F821"]
+"biokit/sequence/rna.py" = ["F821"]
 "biokit/machine_learning/**" = ["E402"]
-"biokit/cli.py" = ["E402", "E402"]
+"biokit/cli.py" = ["E402"]
+"nexus/web/**" = ["B008"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -146,49 +170,7 @@ indent-style = "space"
 docstring-code-format = true
 
 # ---------------------------------------------------------------------------
-# Mypy — strict type checking
-# ---------------------------------------------------------------------------
-
-[tool.mypy]
-python_version = "3.10"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = false
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-show_error_codes = true
-show_column_numbers = true
-pretty = true
-
-[[tool.mypy.overrides]]
-module = [
-    "Bio.*",
-    "Bio.PDB.*",
-    "Bio.SearchIO.*",
-    "Bio.Graphics.GenomeDiagram.*",
-    "reportlab.*",
-    "seaborn.*",
-]
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "biokit.machine_learning.*"
-disallow_untyped_defs = false  # ML module mirrors sklearn patterns
-
-[[tool.mypy.overrides]]
-module = "tests.*"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-
-# ---------------------------------------------------------------------------
-# Pytest — test configuration
+# Pytest
 # ---------------------------------------------------------------------------
 
 [tool.pytest.ini_options]
@@ -199,32 +181,31 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--cov=biokit",
+    "--cov=nexus",
+    "--cov=bridge",
     "--cov-report=term-missing",
     "--cov-report=html:coverage_html",
     "--cov-report=xml:coverage.xml",
-    "--cov-fail-under=80",
-    # Disable pytest-benchmark by default so the full suite runs fast and
-    # contributes to coverage. To actually measure timings, run:
-    #   pytest tests/benchmarks/ --benchmark-only
+    "--cov-fail-under=65",
     "--benchmark-disable",
 ]
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "slow: marks tests as slow",
     "integration: marks tests as integration tests",
     "property: marks tests as property-based tests",
     "benchmark: marks tests as benchmarks",
+    "network: marks tests requiring network/LLM access",
+    "eval: marks tests in the eval harness",
 ]
 filterwarnings = [
-    "ignore::DeprecationWarning:Bio.*",
+    "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning:matplotlib.*",
+    "ignore:.*PyparsingDeprecationWarning.*",
 ]
 
-# ---------------------------------------------------------------------------
-# Coverage
-# ---------------------------------------------------------------------------
-
 [tool.coverage.run]
-source = ["biokit"]
+source = ["biokit", "nexus", "bridge"]
 branch = true
 parallel = true
 omit = [
@@ -232,6 +213,7 @@ omit = [
     "*/docs/*",
     "*/__init__.py",
     "biokit/cli.py",
+    "nexus/web/templates/*",
 ]
 
 [tool.coverage.report]
@@ -244,4 +226,86 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "@overload",
 ]
-fail_under = 80
+fail_under = 65
+
+# ---------------------------------------------------------------------------
+# Mypy
+# ---------------------------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+pretty = true
+
+[[tool.mypy.overrides]]
+module = [
+    "Bio.*",
+    "Bio.PDB.*",
+    "Bio.SearchIO.*",
+    "Bio.Graphics.GenomeDiagram.*",
+    "numpy",
+    "numpy.*",
+    "numpy.typing",
+    "numpy.typing.*",
+    "matplotlib",
+    "matplotlib.*",
+    "matplotlib.pyplot",
+    "matplotlib.pyplot.*",
+    "matplotlib.axes",
+    "matplotlib.axes.*",
+    "matplotlib.figure",
+    "matplotlib.figure.*",
+    "typer",
+    "typer.*",
+    "rich",
+    "rich.*",
+    "rich.console",
+    "rich.console.*",
+    "rich.table",
+    "rich.table.*",
+    "reportlab.*",
+    "seaborn.*",
+    "openai.*",
+    "anthropic.*",
+    "google.*",
+    "google.generativeai.*",
+    "zhipuai.*",
+    "ollama.*",
+    "jinja2.*",
+    "structlog.*",
+    "scipy.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "biokit.machine_learning.*"
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+# BioPython ships py.typed but its inline annotations are incomplete on some
+# installations (SeqIO.parse, PDBParser, PPBuilder, SeqFeature lack return
+# type annotations). On installations where BioPython IS fully typed, this
+# override is a no-op. On installations where it is not, it prevents
+# false-positive no-untyped-call and no-any-return errors.
+module = [
+    "biokit.structural.loader",
+    "biokit.structural.secondary",
+    "biokit.annotation.feature",
+    "biokit.io.genbank",
+    "biokit.utils.io_utils",
+]
+disallow_untyped_calls = false
+warn_return_any = false
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false

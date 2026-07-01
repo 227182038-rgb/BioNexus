@@ -22,6 +22,8 @@ def read_sequences(path: PathLike, fmt: str = "fasta") -> list[SeqRecord]:
     if not p.exists():
         raise InvalidFormatError(f"file not found: {p}")
     try:
+        # ``SeqIO.parse`` is untyped in the BioPython stubs; the runtime
+        # contract is ``Iterator[SeqRecord]``.
         return list(SeqIO.parse(str(p), fmt))
     except Exception as exc:
         raise InvalidFormatError(f"could not parse {p} as {fmt}: {exc}") from exc
@@ -39,7 +41,7 @@ def iter_sequences(path: PathLike, fmt: str = "fasta") -> Iterator[SeqRecord]:
     p = Path(path)
     if not p.exists():
         raise InvalidFormatError(f"file not found: {p}")
-    yield from SeqIO.parse(str(p), fmt)
+    return SeqIO.parse(str(p), fmt)
 
 
 def make_record(sequence: str, id: str, description: str = "") -> SeqRecord:

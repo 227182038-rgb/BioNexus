@@ -1,4 +1,4 @@
-﻿"""Tests for biokit.structural.
+"""Tests for biokit.structural.
 
 All file paths use the absolute ``sample_pdb_path`` fixture from
 ``conftest.py`` so the tests are working-directory-independent.

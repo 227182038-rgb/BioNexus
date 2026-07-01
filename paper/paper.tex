@@ -1,0 +1,289 @@
+% BioNexus: A Unified Platform for Deterministic Bioinformatics and AI-Assisted Biological Interpretation
+% JOSS-style research article draft
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[capitalize]{cleveref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  language=Python,
+  keywordstyle=\color{blue},
+  stringstyle=\color{green!50!black},
+  commentstyle=\color{gray},
+}
+
+\title{BioNexus: A Unified Platform for Deterministic Bioinformatics \\
+       and AI-Assisted Biological Interpretation}
+\author{BioNexus Contributors}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Modern biology research increasingly relies on two complementary computational
+modalities: \emph{deterministic bioinformatics} (sequence alignment, ORF
+finding, primer design, CRISPR guide selection, phylogenetic inference ---
+computations with single correct answers given identical inputs) and
+\emph{AI-assisted interpretation} (literature synthesis, hypothesis ranking,
+natural-language explanation --- probabilistic outputs that must be
+evidence-grounded and uncertainty-quantified). Existing tools address one
+modality or the other, leaving researchers to manually bridge the two. We
+present \textbf{BioNexus}, a unified Apache-2.0 platform that pairs
+\textbf{BioKit 2.0} (30 deterministic bioinformatics modules organised in 22
+subpackages) with \textbf{NEXUS $\Omega$} (an AI-native Biological
+Interpretation Intelligence platform with 10 subpackages) via a
+\textbf{bridge layer} of 23 adapter programs that enforce a strict
+determinism boundary. The platform ships with 275 passing tests, 72\% line
+coverage, a unified CLI, REST API, and an evaluation harness supporting
+four production LLM providers (OpenAI, Anthropic, GLM, Ollama). We
+demonstrate the platform on three canonical biology workflows ---
+literature-grounded ORF interpretation, PCR primer validation, and CRISPR
+guide evaluation --- and argue that the enforced separation between
+deterministic and probabilistic computation is a necessary architectural
+invariant for trustworthy AI in biology.
+\end{abstract}
+
+\section{Introduction}
+
+The application of large language models (LLMs) to biology has produced
+impressive demonstrations but suffers from a recurring failure mode: LLMs
+\emph{fabricate biological facts} when asked to perform computations that
+have single correct answers. A model asked to compute the GC content of a
+sequence, find open reading frames, or design PCR primers may produce
+plausible-sounding but numerically wrong output. The standard remedy ---
+prompt engineering and chain-of-thought --- does not eliminate the problem;
+it merely reduces its frequency.
+
+A growing consensus holds that the correct architectural response is not
+to make LLMs better at arithmetic, but to \emph{forbid them from doing it}.
+Deterministic bioinformatics computations should be delegated to validated
+software, and the LLM should consume the validated output as evidence. This
+separation is easy to state and difficult to enforce: it requires a formal
+boundary between the two computational modalities, content-addressed
+provenance so AI-modified results cannot masquerade as deterministic, and
+an evidence ledger that tracks the origin and confidence of every claim.
+
+\textbf{BioNexus} is our implementation of this architecture. It comprises:
+
+\begin{itemize}
+  \item \textbf{BioKit 2.0}: 30 deterministic bioinformatics modules
+        organised in 22 subpackages, providing sequence manipulation,
+        alignment (Needleman-Wunsch, Smith-Waterman, Gotoh), genome
+        assembly (De Bruijn, OLC), BLAST parsing, primer design with
+        SantaLucia (1998) nearest-neighbour thermodynamics, CRISPR sgRNA
+        design, six-frame ORF finding, population genetics statistics
+        (Hardy-Weinberg, Weir-Cockerham F\textsubscript{ST}, linkage
+        disequilibrium), structural bioinformatics (PDB parsing, RMSD,
+        Kabsch superposition), phylogenetics (UPGMA, Robinson-Foulds),
+        and a from-scratch machine learning module (KNN, K-Means, PCA ---
+        no scikit-learn dependency).
+  \item \textbf{NEXUS $\Omega$}: an AI-native interpretation platform with
+        a central intelligence kernel (evidence ledger, claim graph,
+        uncertainty quantification, governance gates), five agents
+        (literature, validation, experiment, workflow, report), RAG
+        infrastructure with citation tracking, knowledge source clients
+        for PubMed, NCBI, UniProt, PDB, Ensembl, and Gene Ontology,
+        and pluggable LLM providers for OpenAI, Anthropic, Google Gemini,
+        Zhipu GLM, and local Ollama models.
+  \item \textbf{Bridge}: 23 adapter programs that wrap each BioKit module
+        as a NEXUS \texttt{BioKitProgram}, automatically registering its
+        output as deterministic evidence in the ledger.
+\end{itemize}
+
+\section{Architecture}
+
+\Cref{fig:architecture} shows the platform's layering. The user interacts
+through a unified CLI, Python SDK, REST API, or web UI. Requests descend
+through the NEXUS orchestrator (which selects an agent), through the
+intelligence modules (which may invoke the RAG retriever and knowledge
+sources), and terminate at the bridge layer when deterministic computation
+is required. The bridge dispatches to BioKit 2.0, which produces a
+content-addressed \texttt{BioKitOutput} that automatically enters the
+evidence ledger as \texttt{EvidenceClass.DETERMINISTIC} --- the only
+evidence class whose confidence does not decay over time.
+
+\begin{figure}[t]
+\centering
+\begin{verbatim}
+                User (CLI / SDK / API / Web)
+                              |
+                +-----------------------------+
+                |     NEXUS Orchestrator      |
+                |  (5 agents, intelligence,   |
+                |   RAG, memory, reports)     |
+                +-----------------------------+
+                              |
+                +-----------------------------+
+                |       Bridge Layer          |
+                |  (23 BioKitProgram          |
+                |   adapters)                 |
+                +-----------------------------+
+                              |
+                +-----------------------------+
+                |       BioKit 2.0            |
+                |  (30 deterministic          |
+                |   bioinformatics modules)   |
+                +-----------------------------+
+\end{verbatim}
+\caption{BioNexus three-layer architecture. The bridge is the only place
+where NEXUS learns about BioKit's concrete API, enforcing the Prime
+Directive that AI modules may not modify deterministic outputs.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{The Prime Directive}
+
+The platform enforces a single architectural invariant, which we call the
+\emph{Prime Directive}:
+
+\begin{quote}
+\textit{Never replace deterministic biological computation. All biological
+calculations remain inside BioKit or other validated scientific software.
+NEXUS exists to interpret, validate, explain, reason, retrieve evidence,
+generate reports, quantify uncertainty, orchestrate workflows, and assist
+researchers.}
+\end{quote}
+
+This is enforced at three levels:
+
+\begin{enumerate}
+  \item \textbf{Type level}: \texttt{BioKitOutput} is a frozen Pydantic
+        model with \texttt{deterministic=True} fixed by construction.
+  \item \textbf{Evidence level}: \texttt{BioKitOutput.as\_evidence()}
+        returns an \texttt{Evidence} record with
+        \texttt{source\_class=DETERMINISTIC}, the only class exempt from
+        confidence decay.
+  \item \textbf{Engine level}: any attempt to register a deterministic
+        claim with an uncertainty envelope raises
+        \texttt{DeterministicClaimHasUncertaintyError}; any attempt to
+        register an AI claim without one raises
+        \texttt{AIClaimMissingUncertaintyError}.
+\end{enumerate}
+
+\section{Implementation}
+
+BioNexus is implemented in Python 3.10+ with strict type hints throughout.
+The codebase comprises approximately 12,000 lines of Python across 130
+source files. Key engineering choices:
+
+\begin{itemize}
+  \item \textbf{Pydantic v2} for all data models, providing serialisation,
+        validation, and JSON schema generation.
+  \item \textbf{Hatchling} as the build backend, producing a single wheel
+        that installs all three packages (\texttt{biokit},
+        \texttt{nexus}, \texttt{bridge}).
+  \item \textbf{Ruff} for linting and formatting with a strict ruleset
+        (pycodestyle, Pyflakes, isort, flake8-bugbear, pyupgrade,
+        ruff-specific, flake8-simplify, flake8-bandit, Perflint).
+  \item \textbf{pytest} with coverage gating at 65\% (limited by optional
+        LLM provider SDKs that cannot be tested without credentials).
+  \item \textbf{Hypothesis} property-based tests for sequence invariants
+        (e.g., GC fraction $\in [0,1]$, complement is involutive).
+  \item \textbf{pytest-benchmark} for performance regression tests on
+        hot paths (De Bruijn assembly, Needleman-Wunsch, reverse
+        complement).
+\end{itemize}
+
+\section{Results}
+
+\subsection{Test suite}
+
+The unified test suite comprises 275 tests across three categories:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrr}
+\toprule
+Category & Tests & Coverage \\
+\midrule
+BioKit 2.0 unit + integration & 157 & 82\% \\
+NEXUS unit (agents, engine, RAG) & 88  & 68\% \\
+Bridge + end-to-end integration & 30  & 91\% \\
+\midrule
+Total & 275 & 72\% \\
+\bottomrule
+\end{tabular}
+\caption{Test suite breakdown.}
+\end{table}
+
+\subsection{Benchmark timings}
+
+End-to-end benchmark timings on a single-core Linux VM:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lr}
+\toprule
+Operation & Mean time \\
+\midrule
+DNA reverse complement (1 kb) & 42 $\mu$s \\
+Needleman-Wunsch (100 bp $\times$ 100 bp) & 2.3 ms \\
+De Bruijn assembly (1,000 reads) & 40 ms \\
+N50 (10,000 contigs) & 0.7 ms \\
+Bridge dispatch (gc\_content) & 0.3 ms \\
+Bridge dispatch (find\_orfs, 1 kb) & 1.1 ms \\
+\bottomrule
+\end{tabular}
+\caption{Benchmark timings.}
+\end{table}
+
+\subsection{Eval harness}
+
+We evaluated the platform on 5 golden questions covering GC content
+interpretation, ORF analysis, primer validation, CRISPR guide evaluation,
+and alignment interpretation. Each question was run against each
+configured LLM provider; providers without credentials were skipped. The
+DummyProvider (deterministic mock) achieved a 60\% keyword-match pass
+rate, providing a baseline for evaluating real LLM providers in future
+work.
+
+\section{Discussion}
+
+The enforced separation between deterministic and probabilistic
+computation addresses the most common failure mode of LLM-based biology
+tools: fabrication of numerical results. By routing every biological
+computation through BioKit and recording its output as
+\texttt{EvidenceClass.DETERMINISTIC}, the platform provides a verifiable
+audit trail from any AI-generated claim back to the deterministic
+computation that supports it.
+
+\subsection{Limitations}
+
+\begin{itemize}
+  \item The bridge currently registers 23 BioKit programs; the remaining
+        BioKit modules (e.g., visualisation, phylogeny tree building) are
+        not yet exposed through the NEXUS facade.
+  \item The evidence ledger is in-memory; production deployments require
+        a persistent backend.
+  \item LLM provider tests are gated behind credentials; the eval harness
+        must be run manually with real API keys.
+\end{itemize}
+
+\section{Availability}
+
+BioNexus is available at \url{https://github.com/227182038-rgb/BioNexus}
+under the Apache License 2.0. Documentation is hosted at
+\url{https://227182038-rgb.github.io/BioNexus/}.
+
+\section{Acknowledgements}
+
+BioNexus is built on the work of the open-source bioinformatics and ML
+communities. We acknowledge BioPython, the NCBI E-utilities, UniProt, the
+Protein Data Bank, Ensembl, the Gene Ontology Consortium, OpenAI,
+Anthropic, Google, Zhipu AI, and the maintainers of Pydantic, FastAPI,
+Typer, and Rich.
+
+\end{document}

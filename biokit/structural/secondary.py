@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from Bio.PDB import PPBuilder
+from Bio.PDB.Polypeptide import PPBuilder
 from Bio.PDB.Structure import Structure
 
 
@@ -18,7 +18,8 @@ def secondary_structure_fractions(structure: Structure) -> tuple[float, float, f
     helix = sheet = coil = 0
     total = 0
     for pp in ppb.build_peptides(structure):
-        for phi, psi in pp.get_phi_psi_list():
+        for entry in pp.get_phi_psi_list():
+            phi, psi = entry
             if phi is None or psi is None:
                 continue
             total += 1

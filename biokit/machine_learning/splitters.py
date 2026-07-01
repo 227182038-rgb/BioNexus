@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import numpy as np
 from numpy.typing import NDArray
@@ -14,10 +14,10 @@ T = TypeVar("T")
 
 
 def train_test_split(
-    *arrays: Sequence[T] | NDArray[np.float64],
+    *arrays: Sequence[Any] | NDArray[Any],
     test_size: float = 0.2,
     random_state: int = 0,
-) -> list:
+) -> list[Any]:
     """Split arrays into random train and test subsets.
 
     Examples
@@ -29,16 +29,16 @@ def train_test_split(
     """
     if not arrays:
         raise ValidationError("at least one array required")
-    n = len(arrays[0])  # type: ignore[arg-type]
+    n = len(arrays[0])
     for a in arrays:
-        if len(a) != n:  # type: ignore[arg-type]
+        if len(a) != n:
             raise ValidationError("all arrays must have the same length")
     rng = np.random.default_rng(random_state)
     idx = rng.permutation(n)
     n_test = max(1, int(n * test_size))
     test_idx = idx[:n_test]
     train_idx = idx[n_test:]
-    out: list = []
+    out: list[Any] = []
     for a in arrays:
         a_arr = np.asarray(a)
         out.append(a_arr[train_idx])
@@ -50,7 +50,7 @@ def k_fold(
     n: int,
     k: int = 5,
     random_state: int = 0,
-) -> list[tuple[NDArray[np.int32], NDArray[np.int32]]]:
+) -> list[tuple[NDArray[np.int64], NDArray[np.int64]]]:
     """Generate ``k`` (train_idx, test_idx) pairs for k-fold CV."""
     if k < 2:
         raise ValidationError("k must be ≥ 2")
@@ -59,10 +59,10 @@ def k_fold(
     rng = np.random.default_rng(random_state)
     idx = rng.permutation(n)
     folds = np.array_split(idx, k)
-    splits: list[tuple[NDArray[np.int32], NDArray[np.int32]]] = []
+    splits: list[tuple[NDArray[np.int64], NDArray[np.int64]]] = []
     for i in range(k):
-        test_idx = folds[i]
-        train_idx = np.concatenate([folds[j] for j in range(k) if j != i])
+        test_idx: NDArray[np.int64] = folds[i]
+        train_idx: NDArray[np.int64] = np.concatenate([folds[j] for j in range(k) if j != i])
         splits.append((train_idx, test_idx))
     return splits
 

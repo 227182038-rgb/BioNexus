@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -43,13 +45,13 @@ class KNNClassifier:
         self._y = np.asarray(y)
         return self
 
-    def predict(self, X: NDArray[np.float64]) -> NDArray[np.str_]:
+    def predict(self, X: NDArray[np.float64]) -> NDArray[Any]:
         """Predict labels for ``X``."""
         if self._X is None or self._y is None:
             raise NotFittedError("KNNClassifier must be fitted before predict")
         X = np.asarray(X, dtype=float)
         # Preserve the original label dtype so y_test/pred comparisons work.
-        out: list = []
+        out: list[Any] = []
         for row in X:
             dists = np.sqrt(((self._X - row) ** 2).sum(axis=1))
             k = min(self.k, len(self._X))

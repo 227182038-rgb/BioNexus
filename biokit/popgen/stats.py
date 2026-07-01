@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Iterable, Sequence
 from itertools import combinations
-
-from scipy import stats
 
 from biokit.exceptions import PopGenError
 from biokit.popgen.frequencies import allele_frequencies
@@ -21,13 +19,16 @@ def hardy_weinberg_test(genotypes: Iterable[Genotype]) -> tuple[float, float]:
     tuple[float, float]
         ``(chi2_statistic, p_value)``.
     """
+    from scipy import stats
+
     genotypes = list(genotypes)
     freqs = allele_frequencies(genotypes)
     n = len(genotypes)
     alleles = sorted(freqs)
     observed: dict[Genotype, int] = defaultdict(int)
     for gt in genotypes:
-        observed[tuple(sorted(gt))] += 1  # type: ignore[arg-type]
+        a1, a2 = sorted(gt)
+        observed[(a1, a2)] += 1
     expected: list[float] = []
     obs_list: list[int] = []
     for a1, a2 in combinations(alleles, 2):
@@ -56,8 +57,6 @@ def weir_cockerham_fst(populations: Sequence[Iterable[Genotype]]) -> float:
     populations : sequence of iterables of (str, str)
         One iterable of genotypes per sub-population.
     """
-    from collections import Counter
-
     pop_lists = [list(p) for p in populations]
     if len(pop_lists) < 2:
         raise PopGenError("F_ST requires ≥ 2 populations")
@@ -82,7 +81,7 @@ def weir_cockerham_fst(populations: Sequence[Iterable[Genotype]]) -> float:
             p_per_pop.append(0.0)
             h_per_pop.append(0.0)
             continue
-        ac = Counter()
+        ac: Counter[str] = Counter()
         for gt in pop:
             ac[gt[0]] += 1
             ac[gt[1]] += 1

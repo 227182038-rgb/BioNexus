@@ -58,10 +58,10 @@ def _parse_node(text: str) -> TreeNode:
     # Find matching close paren
     depth = 0
     close_idx = -1
-    for i, c in enumerate(text):
-        if c == "(":
+    for i, ch in enumerate(text):
+        if ch == "(":
             depth += 1
-        elif c == ")":
+        elif ch == ")":
             depth -= 1
             if depth == 0:
                 close_idx = i
@@ -72,28 +72,28 @@ def _parse_node(text: str) -> TreeNode:
     children: list[TreeNode] = []
     depth = 0
     start = 0
-    for i, c in enumerate(inner):
-        if c == "(":
+    for i, ch in enumerate(inner):
+        if ch == "(":
             depth += 1
-        elif c == ")":
+        elif ch == ")":
             depth -= 1
-        elif c == "," and depth == 0:
+        elif ch == "," and depth == 0:
             children.append(_parse_node(inner[start:i]))
             start = i + 1
     children.append(_parse_node(inner[start:]))
     # Parse internal name and branch length
-    name = ""
-    bl = 0.0
+    node_name = ""
+    node_bl: float = 0.0
     if rest:
         if ":" in rest:
-            name, bl_str = rest.split(":", 1)
-            name = name.strip()
-            bl = float(bl_str)
+            node_name, bl_str = rest.split(":", 1)
+            node_name = node_name.strip()
+            node_bl = float(bl_str)
         else:
-            name = rest.strip()
-    node = TreeNode(name=name, branch_length=bl)
-    for c in children:
-        node.add_child(c)
+            node_name = rest.strip()
+    node = TreeNode(name=node_name, branch_length=node_bl)
+    for child in children:
+        node.add_child(child)
     return node
 
 
