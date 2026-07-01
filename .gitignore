@@ -1,3 +1,8 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -24,5 +29,14 @@ site/
 .idea/
 .DS_Store
 *.swp
-.ruff_cache/
+
+# Type checking / lint
 .mypy_cache/
+.ruff_cache/
+
+# Environment variables
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
