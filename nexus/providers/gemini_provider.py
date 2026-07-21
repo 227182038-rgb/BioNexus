@@ -47,7 +47,7 @@ class GeminiProvider(BaseLLMProvider):
             # Runtime API is valid.
             # mypy reports a false-positive because the package stubs
             # do not explicitly export `configure`.
-            genai.configure(api_key=self._api_key)  # type: ignore[attr-defined]
+            genai.configure(api_key=self._api_key)
 
         return genai
 
