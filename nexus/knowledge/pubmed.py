@@ -1,4 +1,4 @@
-"""PubMed client (via NCBI E-utilities)."""
+﻿"""PubMed client (via NCBI E-utilities)."""
 
 from __future__ import annotations
 
@@ -15,46 +15,58 @@ class PubMedClient(KnowledgeClient):
         return "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 
     async def fetch(self, record_id: str) -> KnowledgeRecord:
-        async with self._make_client() as client:
-            try:
-                response = await client.get(
-                    "/efetch.fcgi",
-                    params={
-                        "db": "pubmed",
-                        "id": record_id,
-                        "rettype": "abstract",
-                        "retmode": "xml",
-                    },
-                )
-                response.raise_for_status()
-            except Exception as exc:
-                raise KnowledgeError(f"PubMed fetch failed for {record_id}: {exc}") from exc
+        try:
+            response = await self._request(
+                "GET",
+                "/efetch.fcgi",
+                params={
+                    "db": "pubmed",
+                    "id": record_id,
+                    "rettype": "abstract",
+                    "retmode": "xml",
+                },
+            )
+        except Exception as exc:
+            raise KnowledgeError(
+                f"PubMed fetch failed for {record_id}: {exc}"
+            ) from exc
 
         return self._parse_xml(response.text, record_id)
 
     async def search(self, query: str, limit: int = 10) -> list[KnowledgeRecord]:
-        async with self._make_client() as client:
-            try:
-                esearch = await client.get(
-                    "/esearch.fcgi",
-                    params={
-                        "db": "pubmed",
-                        "term": query,
-                        "retmax": str(limit),
-                        "retmode": "json",
-                    },
-                )
-                esearch.raise_for_status()
-                ids = esearch.json().get("esearchresult", {}).get("idlist", [])
-            except Exception as exc:
-                raise KnowledgeError(f"PubMed search failed for {query!r}: {exc}") from exc
+        try:
+            response = await self._request(
+                "GET",
+                "/esearch.fcgi",
+                params={
+                    "db": "pubmed",
+                    "term": query,
+                    "retmax": str(limit),
+                    "retmode": "json",
+                },
+            )
+
+            ids = response.json().get(
+                "esearchresult",
+                {},
+            ).get(
+                "idlist",
+                [],
+            )
+
+        except Exception as exc:
+            raise KnowledgeError(
+                f"PubMed search failed for {query!r}: {exc}"
+            ) from exc
 
         records: list[KnowledgeRecord] = []
+
         for pmid in ids[:limit]:
             try:
                 records.append(await self.fetch(pmid))
             except KnowledgeError:
                 continue
+
         return records
 
     def _parse_xml(self, xml_text: str, pmid: str) -> KnowledgeRecord:
@@ -114,3 +126,5 @@ class PubMedClient(KnowledgeClient):
 
 
 __all__ = ["PubMedClient"]
+
+
